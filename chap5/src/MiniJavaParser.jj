@@ -76,14 +76,19 @@ Program Goal() :
 }
 
 MainClass MainClass() :
-{ Identifier className, argsName; Statement stmt; }
+{ Token classTok; Identifier className, argsName; Statement stmt; }
 {
-    <CLASS> className = Identifier() <LBRACE>
+    classTok = <CLASS> className = Identifier() <LBRACE>
         <PUBLIC> <STATIC> <VOID> <MAIN> <LPAREN> <STRING> <LBRACKET> <RBRACKET> argsName = Identifier() <RPAREN> <LBRACE>
             stmt = Statement()
             <RBRACE>
         <RBRACE>
-        { return new MainClass(className, argsName, stmt); }
+        { return new MainClass(
+         className, argsName, stmt,
+         classTok.beginLine, classTok.beginColumn,
+         classTok.endLine, classTok.endColumn
+         );
+        }
 }
 
 Type Type() :

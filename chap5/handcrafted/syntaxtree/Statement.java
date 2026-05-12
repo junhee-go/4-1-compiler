@@ -3,8 +3,8 @@ import visitor.Visitor;
 import visitor.TypeVisitor;
 
 public abstract class Statement extends ASTNode {
-  protected Statement(int line, int column) {
-    super(line, column);
+  protected Statement(int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
   }
 
   public abstract void accept(Visitor v);

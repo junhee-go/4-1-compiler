@@ -10,9 +10,9 @@ public class MethodDecl extends ASTNode {
   public StatementList sl;
   public Exp e;
 
-  public MethodDecl(Type at, Identifier ai, FormalList afl, VarDeclList avl, 
-                    StatementList asl, Exp ae, int line, int column) {
-    super(line, column);
+  public MethodDecl(Type at, Identifier ai, FormalList afl, VarDeclList avl,
+                    StatementList asl, Exp ae, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     t=at; i=ai; fl=afl; vl=avl; sl=asl; e=ae;
   }
  

@@ -6,8 +6,8 @@ public class VarDecl extends ASTNode {
   public Type t;
   public Identifier i;
   
-  public VarDecl(Type at, Identifier ai, int line, int column) {
-    super(line, column);
+  public VarDecl(Type at, Identifier ai, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     t=at; i=ai;
   }
 

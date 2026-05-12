@@ -6,8 +6,8 @@ public class While extends Statement {
   public Exp e;
   public Statement s;
 
-  public While(Exp ae, Statement as, int line, int column) {
-    super(line, column);
+  public While(Exp ae, Statement as, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     e=ae; s=as;
   }
 
@@ -19,4 +19,3 @@ public class While extends Statement {
     return v.visit(this);
   }
 }
-

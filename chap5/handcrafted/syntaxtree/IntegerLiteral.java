@@ -5,8 +5,8 @@ import visitor.TypeVisitor;
 public class IntegerLiteral extends Exp {
   public int i;
 
-  public IntegerLiteral(int ai, int line, int column) {
-    super(line, column);
+  public IntegerLiteral(int ai, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     i=ai;
   }
 

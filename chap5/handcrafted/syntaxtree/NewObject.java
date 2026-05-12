@@ -5,8 +5,8 @@ import visitor.TypeVisitor;
 public class NewObject extends Exp {
   public Identifier i;
   
-  public NewObject(Identifier ai, int line, int column) {
-    super(line, column);
+  public NewObject(Identifier ai, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     i=ai;
   }
 

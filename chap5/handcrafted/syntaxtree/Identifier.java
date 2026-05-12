@@ -5,8 +5,8 @@ import visitor.TypeVisitor;
 public class Identifier extends ASTNode {
   public String s;
 
-  public Identifier(String as, int line, int column) {
-    super(line, column);
+  public Identifier(String as, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     s=as;
   }
 

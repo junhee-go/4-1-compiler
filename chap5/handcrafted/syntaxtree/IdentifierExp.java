@@ -5,8 +5,8 @@ import visitor.TypeVisitor;
 public class IdentifierExp extends Exp {
   public String s;
 
-  public IdentifierExp(String as, int line, int column) {
-    super(line, column);
+  public IdentifierExp(String as, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     s=as;
   }
 

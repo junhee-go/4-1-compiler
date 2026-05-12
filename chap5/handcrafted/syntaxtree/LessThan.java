@@ -5,8 +5,8 @@ import visitor.TypeVisitor;
 public class LessThan extends Exp {
   public Exp e1,e2;
   
-  public LessThan(Exp ae1, Exp ae2, int line, int column) {
-    super(line, column);
+  public LessThan(Exp ae1, Exp ae2, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     e1=ae1; e2=ae2;
   }
 

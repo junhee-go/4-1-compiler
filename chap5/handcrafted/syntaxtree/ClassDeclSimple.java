@@ -7,8 +7,8 @@ public class ClassDeclSimple extends ClassDecl {
   public VarDeclList vl;  
   public MethodDeclList ml;
  
-  public ClassDeclSimple(Identifier ai, VarDeclList avl, MethodDeclList aml, int line, int column) {
-    super(line, column);
+  public ClassDeclSimple(Identifier ai, VarDeclList avl, MethodDeclList aml, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     i=ai; vl=avl; ml=aml;
   }
 

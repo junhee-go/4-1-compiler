@@ -6,8 +6,8 @@ public class Formal extends ASTNode {
   public Type t;
   public Identifier i;
  
-  public Formal(Type at, Identifier ai, int line, int column) {
-    super(line, column);
+  public Formal(Type at, Identifier ai, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     t=at; i=ai;
   }
 

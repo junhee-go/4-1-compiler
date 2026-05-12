@@ -6,7 +6,7 @@ public abstract class Exp extends ASTNode {
   public abstract void accept(Visitor v);
   public abstract Type accept(TypeVisitor v);
 
-  protected Exp(int line, int column) {
-    super(line, column);
+  protected Exp(int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
   }
 }

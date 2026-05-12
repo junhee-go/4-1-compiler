@@ -5,8 +5,8 @@ import visitor.TypeVisitor;
 public class Block extends Statement {
   public StatementList sl;
 
-  public Block(StatementList asl, int line, int column) {
-    super(line, column);
+  public Block(StatementList asl, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     sl=asl;
   }
 
@@ -18,4 +18,3 @@ public class Block extends Statement {
     return v.visit(this);
   }
 }
-

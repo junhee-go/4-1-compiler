@@ -6,8 +6,8 @@ public class Assign extends Statement {
   public Identifier i;
   public Exp e;
 
-  public Assign(Identifier ai, Exp ae, int line, int column) {
-    super(line, column);
+  public Assign(Identifier ai, Exp ae, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     i=ai; e=ae;
   }
 
@@ -19,4 +19,3 @@ public class Assign extends Statement {
     return v.visit(this);
   }
 }
-

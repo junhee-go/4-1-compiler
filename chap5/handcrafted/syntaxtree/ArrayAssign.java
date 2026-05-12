@@ -6,8 +6,8 @@ public class ArrayAssign extends Statement {
   public Identifier i;
   public Exp e1,e2;
 
-  public ArrayAssign(Identifier ai, Exp ae1, Exp ae2, int line, int column) {
-    super(line, column);
+  public ArrayAssign(Identifier ai, Exp ae1, Exp ae2, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     i=ai; e1=ae1; e2=ae2;
   }
 
@@ -20,4 +20,3 @@ public class ArrayAssign extends Statement {
   }
 
 }
-

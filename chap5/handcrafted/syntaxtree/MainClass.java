@@ -6,8 +6,8 @@ public class MainClass extends ASTNode {
   public Identifier i1,i2;
   public Statement s;
 
-  public MainClass(Identifier ai1, Identifier ai2, Statement as, int line, int column) {
-    super(line, column);
+  public MainClass(Identifier ai1, Identifier ai2, Statement as, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     i1=ai1; i2=ai2; s=as;
   }
 
@@ -19,4 +19,3 @@ public class MainClass extends ASTNode {
     return v.visit(this);
   }
 }
-

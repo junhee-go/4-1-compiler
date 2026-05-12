@@ -6,8 +6,8 @@ public class If extends Statement {
   public Exp e;
   public Statement s1,s2;
 
-  public If(Exp ae, Statement as1, Statement as2, int line, int column) {
-    super(line, column);
+  public If(Exp ae, Statement as1, Statement as2, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     e=ae; s1=as1; s2=as2;
   }
 
@@ -19,4 +19,3 @@ public class If extends Statement {
     return v.visit(this);
   }
 }
-

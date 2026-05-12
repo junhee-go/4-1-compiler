@@ -3,8 +3,8 @@ import visitor.Visitor;
 import visitor.TypeVisitor;
 
 public class IntArrayType extends Type {
-  public IntArrayType(int line, int column) {
-    super(line, column);
+  public IntArrayType(int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
   }
 
   public void accept(Visitor v) {

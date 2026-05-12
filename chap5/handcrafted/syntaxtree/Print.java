@@ -6,8 +6,8 @@ import visitor.TypeVisitor;
 public class Print extends Statement {
     public Exp e; 
 
-    public Print(Exp ae, int line, int column) {
-        super(line, column);
+    public Print(Exp ae, int line, int column, int endLine, int endColumn) {
+        super(line, column, endLine, endColumn);
         e = ae;
     }
 

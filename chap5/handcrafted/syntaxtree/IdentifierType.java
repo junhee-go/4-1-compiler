@@ -5,8 +5,8 @@ import visitor.TypeVisitor;
 public class IdentifierType extends Type {
   public String s;
 
-  public IdentifierType(String as, int line, int column) {
-    super(line, column);
+  public IdentifierType(String as, int line, int column, int endLine, int endColumn) {
+    super(line, column, endLine, endColumn);
     s=as;
   }
 
