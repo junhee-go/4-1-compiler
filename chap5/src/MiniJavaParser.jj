@@ -76,17 +76,17 @@ Program Goal() :
 }
 
 MainClass MainClass() :
-{ Token classTok; Identifier className, argsName; Statement stmt; }
+{ Token classTok, endTok; Identifier className, argsName; Statement stmt; }
 {
     classTok = <CLASS> className = Identifier() <LBRACE>
         <PUBLIC> <STATIC> <VOID> <MAIN> <LPAREN> <STRING> <LBRACKET> <RBRACKET> argsName = Identifier() <RPAREN> <LBRACE>
             stmt = Statement()
             <RBRACE>
-        <RBRACE>
+        endTok = <RBRACE>
         { return new MainClass(
          className, argsName, stmt,
          classTok.beginLine, classTok.beginColumn,
-         classTok.endLine, classTok.endColumn
+         endTok.endLine, endTok.endColumn
          );
         }
 }
@@ -102,31 +102,35 @@ Type Type() :
 }
 
 Type IntArrayType() :
-{}
+{ Token intTok, endTok; }
 {
-    <INT> <LBRACKET> <RBRACKET>
-    { return new IntArrayType(); }
+    intTok = <INT> <LBRACKET> endTok = <RBRACKET>
+    { return new IntArrayType(
+         intTok.beginLine, intTok.beginColumn,
+         endTok.endLine, endTok.endColumn
+         );
+    }
 }
 
 Type BooleanType() :
-{}
+{ Token t; }
 {
-    <BOOLEAN>
-    { return new BooleanType(); }
+    t = <BOOLEAN>
+    { return new BooleanType(t.beginLine, t.beginColumn, t.endLine, t.endColumn); }
 }
 
 Type IntegerType() :
-{}
+{ Token t; }
 {
-    <INT>
-    { return new IntegerType(); }
+    t = <INT>
+    { return new IntegerType(t.beginLine, t.beginColumn, t.endLine, t.endColumn); }
 }
 
 Type IdentifierType() :
 { Identifier id; }
 {
     id = Identifier()
-    { return new IdentifierType(id.s); } // Identifer class => field s(String type) for lexeme
+    { return new IdentifierType(id.s, id.line, id.column, id.endLine, id.endColumn); } // Identifer class => field s(String type) for lexeme
 }
 
 ClassDecl TypeDeclaration() :
@@ -141,14 +145,20 @@ ClassDecl ClassDeclaration() :
     Identifier className;
     VarDecl v; VarDeclList vl = new VarDeclList();
     MethodDecl m; MethodDeclList ml = new MethodDeclList();
+    Token sTok, eTok; // startToken, endToken
 }
 {
-  <CLASS> className = Identifier() <LBRACE>
+    sTok = <CLASS> className = Identifier() <LBRACE>
     ( v = VarDeclaration() { vl.addElement(v); } )*
     ( m = MethodDeclaration() { ml.addElement(m); } )*
-  <RBRACE>
+    eTok = <RBRACE>
 
-  { return new ClassDeclSimple(className, vl, ml); }
+    { return new ClassDeclSimple(
+        className, vl, ml,
+        sTok.beginLine, sTok.beginColumn,
+        eTok.endLine, eTok.endColumn
+        );
+    }
 }
 
 ClassDecl ClassExtendsDeclaration() :
@@ -156,20 +166,26 @@ ClassDecl ClassExtendsDeclaration() :
     Identifier className; Identifier superClassName;
     VarDecl v; VarDeclList vl = new VarDeclList();
     MethodDecl m; MethodDeclList ml = new MethodDeclList();
+    Token sTok, eTok;
 }
 {
-  <CLASS> className = Identifier() <EXTENDS> superClassName = Identifier() <LBRACE>
+    sTok = <CLASS> className = Identifier() <EXTENDS> superClassName = Identifier() <LBRACE>
     ( v = VarDeclaration() { vl.addElement(v); } )*
     ( m = MethodDeclaration() { ml.addElement(m); } )*
-  <RBRACE>
-  { return new ClassDeclExtends(className, superClassName, vl, ml); }
+    eTok = <RBRACE>
+    { return new ClassDeclExtends(
+         className, superClassName, vl, ml,
+         sTok.beginLine, sTok.beginColumn,
+         eTok.endLine, eTok.endColumn
+         );
+    }
 }
 
 VarDecl VarDeclaration() :
-{ Type t; Identifier id; }
+{ Type t; Identifier id; Token tok; }
 {
-  t = Type() id = Identifier() <SEMICOLON>
-  { return new VarDecl(t, id); }
+  t = Type() id = Identifier() tok = <SEMICOLON>
+  { return new VarDecl(t, id, t.line, t.column, tok.endLine, tok.endColumn); }
 }
 
 //VarDeclList VarDeclList() :
@@ -185,17 +201,23 @@ MethodDecl MethodDeclaration() :
   VarDeclList vl = new VarDeclList(); VarDecl v;
   Statement s; StatementList sl = new StatementList();
   Exp e;
+  Token sTok, eTok;
 }
 {
-  <PUBLIC> t = Type() methodName = Identifier()
-  <LPAREN> [ fl = FormalParameterList() ] <RPAREN>
-  <LBRACE>
+    sTok = <PUBLIC> t = Type() methodName = Identifier()
+    <LPAREN> [ fl = FormalParameterList() ] <RPAREN>
+    <LBRACE>
     ( LOOKAHEAD(2) v = VarDeclaration() { vl.addElement(v); } )*
     ( s = Statement() { sl.addElement(s); } )*
     <RETURN> e = Expression() <SEMICOLON>
-  <RBRACE>
+    eTok = <RBRACE>
 
-  { return new MethodDecl(t, methodName, fl, vl, sl, e); }
+    { return new MethodDecl(
+         t, methodName, fl, vl, sl, e,
+         sTok.beginLine, sTok.beginColumn,
+         eTok.endLine, eTok.endColumn
+         );
+    }
 }
 
 //MethodDeclList MethodDeclList() :
@@ -430,5 +452,5 @@ Identifier Identifier() :
 { Token t; }
 {
   t = <IDENTIFIER>
-  { return new Identifier(t.image); }
+  { return new Identifier(t.image, t.beginLine, t.beginColumn, t.endLine, t.endColumn); }
 }
