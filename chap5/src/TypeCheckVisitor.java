@@ -30,21 +30,19 @@ public class TypeCheckVisitor implements TypeVisitor {
     private final List<String> errors = new ArrayList<>();
     private final Integer MAX_ERRORS = 3;
 
-    // Parsing이 끝나고 생성된 AST에 대한 TypeCheck을 수행하는 시작점. main()에서 이 메서드를 호출
     public boolean check(Program program) {
         try {
             phase = Phase.COLLECT; // 1단계 설정. 근데, phase 초기화를 COLLECT로 해두니 굳이 안 해도 될 듯
-        /*
-        this => TypeCheckVisitor
-        TypeCheckVisitor를 인자로 program의 accept() 호출 ->
-        program.accept()에선 TypeCheckVisitor.visit(Program)을 호출하여 Program에 대한 Type Check을 시작함.
-         */
+            /*
+            this => TypeCheckVisitor
+            TypeCheckVisitor를 인자로 program의 accept() 호출 ->
+            program.accept()에선 TypeCheckVisitor.visit(Program)을 호출하여 Program에 대한 Type Check을 시작함.
+            */
             program.accept(this);
 
-            phase = Phase.CHECK; // TypeCheck 단계를 2단계로 변경
-            program.accept(this); // 다시 accept()를 호출하여 TypeCheck 2단계 수행
-        }
-        catch (TooManyErrorsException e) {
+            phase = Phase.CHECK;
+            program.accept(this);
+        } catch (TooManyErrorsException e) {
             return printErrors();
         }
 
@@ -75,7 +73,6 @@ public class TypeCheckVisitor implements TypeVisitor {
             throw new TooManyErrorsException();
     }
 
-    // 인자로 전달되는 Type에 대한 String을 반환하는 메서드
     private String typeToString(Type type) {
         if (type == null) {
             return "<unknown>";
@@ -94,7 +91,6 @@ public class TypeCheckVisitor implements TypeVisitor {
         }
         return type.getClass().getSimpleName();
     }
-
 
     private boolean sameType(Type left, Type right) {
         if (left == null || right == null) return false;
