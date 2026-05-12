@@ -2,10 +2,11 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class Identifier {
+public class Identifier extends ASTNode {
   public String s;
 
-  public Identifier(String as) { 
+  public Identifier(String as, int line, int column) {
+    super(line, column);
     s=as;
   }
 

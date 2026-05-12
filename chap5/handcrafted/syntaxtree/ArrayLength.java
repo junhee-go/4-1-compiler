@@ -5,8 +5,9 @@ import visitor.TypeVisitor;
 public class ArrayLength extends Exp {
   public Exp e;
   
-  public ArrayLength(Exp ae) {
-    e=ae; 
+  public ArrayLength(Exp ae, int line, int column) {
+    super(line, column);
+    e=ae;
   }
 
   public void accept(Visitor v) {

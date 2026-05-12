@@ -3,6 +3,10 @@ import visitor.Visitor;
 import visitor.TypeVisitor;
 
 public class BooleanType extends Type {
+  public BooleanType(int line, int column) {
+    super(line, column);
+  }
+
   public void accept(Visitor v) {
     v.visit(this);
   }

@@ -9,7 +9,8 @@ public class ClassDeclExtends extends ClassDecl {
   public MethodDeclList ml;
  
   public ClassDeclExtends(Identifier ai, Identifier aj, 
-                  VarDeclList avl, MethodDeclList aml) {
+                  VarDeclList avl, MethodDeclList aml, int line, int column) {
+    super(line, column);
     i=ai; j=aj; vl=avl; ml=aml;
   }
 

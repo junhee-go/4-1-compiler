@@ -3,6 +3,10 @@ import visitor.Visitor;
 import visitor.TypeVisitor;
 
 public class IntegerType extends Type {
+  public IntegerType(int line, int column) {
+    super(line, column);
+  }
+
   public void accept(Visitor v) {
     v.visit(this);
   }

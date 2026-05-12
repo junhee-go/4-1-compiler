@@ -5,7 +5,8 @@ import visitor.TypeVisitor;
 public class Plus extends Exp {
   public Exp e1,e2;
   
-  public Plus(Exp ae1, Exp ae2) { 
+  public Plus(Exp ae1, Exp ae2, int line, int column) {
+    super(line, column);
     e1=ae1; e2=ae2;
   }
 

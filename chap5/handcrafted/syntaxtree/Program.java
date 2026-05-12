@@ -2,12 +2,13 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class Program {
+public class Program extends ASTNode {
   public MainClass m;
   public ClassDeclList cl;
 
-  public Program(MainClass am, ClassDeclList acl) {
-    m=am; cl=acl; 
+  public Program(MainClass am, ClassDeclList acl, int line, int column) {
+    super(line, column);
+    m=am; cl=acl;
   }
 
   public void accept(Visitor v) {

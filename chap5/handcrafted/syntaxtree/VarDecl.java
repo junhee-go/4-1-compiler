@@ -2,11 +2,12 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class VarDecl {
+public class VarDecl extends ASTNode {
   public Type t;
   public Identifier i;
   
-  public VarDecl(Type at, Identifier ai) {
+  public VarDecl(Type at, Identifier ai, int line, int column) {
+    super(line, column);
     t=at; i=ai;
   }
 

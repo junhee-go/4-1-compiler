@@ -2,11 +2,12 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class Formal {
+public class Formal extends ASTNode {
   public Type t;
   public Identifier i;
  
-  public Formal(Type at, Identifier ai) {
+  public Formal(Type at, Identifier ai, int line, int column) {
+    super(line, column);
     t=at; i=ai;
   }
 

@@ -5,8 +5,9 @@ import visitor.TypeVisitor;
 public class Not extends Exp {
   public Exp e;
   
-  public Not(Exp ae) {
-    e=ae; 
+  public Not(Exp ae, int line, int column) {
+    super(line, column);
+    e=ae;
   }
 
   public void accept(Visitor v) {

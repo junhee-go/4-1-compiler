@@ -2,7 +2,7 @@ package syntaxtree;
 import visitor.Visitor;
 import visitor.TypeVisitor;
 
-public class MethodDecl {
+public class MethodDecl extends ASTNode {
   public Type t;
   public Identifier i;
   public FormalList fl;
@@ -11,7 +11,8 @@ public class MethodDecl {
   public Exp e;
 
   public MethodDecl(Type at, Identifier ai, FormalList afl, VarDeclList avl, 
-                    StatementList asl, Exp ae) {
+                    StatementList asl, Exp ae, int line, int column) {
+    super(line, column);
     t=at; i=ai; fl=afl; vl=avl; sl=asl; e=ae;
   }
  
