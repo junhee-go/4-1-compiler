@@ -7,9 +7,7 @@ import syntaxtree.*;
 import visitor.*;
 
 public class TypeCheckVisitor implements TypeVisitor {
-    // TypeCheck => 2단계로 분리
-    // 1단계 COLLECT: 클래스, 메서드 정보 모으는 단계
-    // 2단계 CHECK: 확보한 클래스, 메서드 정보들을 토대로 실질적인 타입 체크 시작
+    private static class TooManyErrorsException extends RuntimeException {}
     private enum Phase { COLLECT, CHECK }
 
     private static class MethodInfo {
@@ -30,30 +28,54 @@ public class TypeCheckVisitor implements TypeVisitor {
     private MethodInfo currentMethod = null;
     private Phase phase = Phase.COLLECT;
     private final List<String> errors = new ArrayList<>();
+    private final Integer MAX_ERRORS = 3;
 
+    // Parsing이 끝나고 생성된 AST에 대한 TypeCheck을 수행하는 시작점. main()에서 이 메서드를 호출
     public boolean check(Program program) {
-        classes.clear();
-        errors.clear();
-        currentClass = null;
-        currentMethod = null;
+        try {
+            phase = Phase.COLLECT; // 1단계 설정. 근데, phase 초기화를 COLLECT로 해두니 굳이 안 해도 될 듯
+        /*
+        this => TypeCheckVisitor
+        TypeCheckVisitor를 인자로 program의 accept() 호출 ->
+        program.accept()에선 TypeCheckVisitor.visit(Program)을 호출하여 Program에 대한 Type Check을 시작함.
+         */
+            program.accept(this);
 
-        phase = Phase.COLLECT;
-        program.accept(this);
-
-        phase = Phase.CHECK;
-        program.accept(this);
-
-        for (String error : errors) {
-            System.err.println(error);
+            phase = Phase.CHECK; // TypeCheck 단계를 2단계로 변경
+            program.accept(this); // 다시 accept()를 호출하여 TypeCheck 2단계 수행
+        }
+        catch (TooManyErrorsException e) {
+            return printErrors();
         }
 
-        return errors.isEmpty();
+        return printErrors();
     }
 
+    /*
+    PrintErrors()가 호출되는 시점
+    1. 허용된 에러 개수를 초과한 경우
+    2. Type Checking 2단계까지 다 정상적으로 끝난 이후
+    */
+    public boolean printErrors() { // boolean -> void
+        if (errors.isEmpty()) return true;
+
+        else {
+            for (String error : errors)
+                System.err.println(error);
+            return false;
+        }
+    }
+
+    // 에러를 저장하는 errors 리스트에 에러 메시지(message)를 add하는 메서드
     private void report(String message) {
-        errors.add(message);
+        if (errors.size() < MAX_ERRORS)
+            errors.add(message);
+
+        else if (errors.size() >= MAX_ERRORS)
+            throw new TooManyErrorsException();
     }
 
+    // 인자로 전달되는 Type에 대한 String을 반환하는 메서드
     private String typeToString(Type type) {
         if (type == null) {
             return "<unknown>";
@@ -73,17 +95,20 @@ public class TypeCheckVisitor implements TypeVisitor {
         return type.getClass().getSimpleName();
     }
 
+
     private boolean sameType(Type left, Type right) {
-        if (left == null || right == null) {
-            return false;
+        if (left == null || right == null) return false;
+
+        if (left.getClass() == right.getClass()) {
+            if (left instanceof IdentifierType) {
+                String leftString = ((IdentifierType) left).s;
+                String rightString = ((IdentifierType) right).s;
+                return leftString.equals(rightString);
+            }
+            return true;
         }
-        if (!left.getClass().equals(right.getClass())) {
-            return false;
-        }
-        if (left instanceof IdentifierType) {
-            return ((IdentifierType) left).s.equals(((IdentifierType) right).s);
-        }
-        return true;
+
+        return false;
     }
 
     private boolean isSubtype(Type sub, Type sup) {
