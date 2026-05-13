@@ -8,6 +8,7 @@ class Fac {
 
     public int ComputeFac(int num){
 	int num_aux ;
+	int num_aux ;
 	if (num < 1)
 	    num_aux = 1 ;
 	else 
@@ -15,4 +16,7 @@ class Fac {
 	return num_aux ;
     }
 
+	public int ComputeFac(int a) {
+		return a;
+	}
 }

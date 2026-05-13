@@ -72,7 +72,7 @@ Program Goal() :
 }
 {
     m = MainClass() ( c = TypeDeclaration() { cl.addElement(c); } )* <EOF>
-    { return new Program(m, cl); }
+    { return new Program(m, cl, m.line, m.column, m.endLine, m.endColumn); }
 }
 
 MainClass MainClass() :
@@ -232,7 +232,7 @@ Formal FormalParameter() :
 { Type t; Identifier id; }
 {
   t = Type() id = Identifier()
-  { return new Formal(t, id); }
+  { return new Formal(t, id, t.line, t.column, id.endLine, id.endColumn); }
 }
 
 FormalList FormalParameterList() :
@@ -249,7 +249,7 @@ FormalList FormalParameterList() :
 //  <COMMA> FormalParameter()
 //}
 
-Statement Statement() ://ㅇ
+Statement Statement() :
 { Statement stmt; }
 {
     stmt = Block() { return stmt; }
@@ -268,51 +268,51 @@ Statement Statement() ://ㅇ
 }
 
 Statement Block() :
-{ Statement s; StatementList sl = new StatementList(); }
+{ Statement s; StatementList sl = new StatementList(); Token sTok, eTok; }
 {
-  <LBRACE>
+  sTok = <LBRACE>
     ( s = Statement() { sl.addElement(s); } )*
-  <RBRACE>
-  { return new Block(sl); }
+  eTok = <RBRACE>
+  { return new Block(sl, sTok.beginLine, sTok.beginColumn, eTok.endLine, eTok.endColumn); }
 }
 
 Statement IfStatement() :
-{ Exp e; Statement s1, s2; }
+{ Exp e; Statement s1, s2; Token sTok, eTok; }
 {
-  <IF> <LPAREN> e = Expression() <RPAREN>
+  sTok = <IF> <LPAREN> e = Expression() <RPAREN>
   s1 = Statement()
   <ELSE>
   s2 = Statement()
-  { return new If(e, s1, s2); }
+  { return new If(e, s1, s2, sTok.beginLine, sTok.beginColumn, s2.endLine, s2.endColumn); }
 }
 
 Statement WhileStatement() :
-{ Exp e; Statement s; }
+{ Exp e; Statement s; Token sTok; }
 {
-  <WHILE> <LPAREN> e = Expression() <RPAREN>
+  sTok = <WHILE> <LPAREN> e = Expression() <RPAREN>
   s = Statement()
-  { return new While(e, s); }
+  { return new While(e, s, sTok.beginLine, sTok.beginColumn, s.endLine, s.endColumn); }
 }
 
 Statement PrintStatement() :
-{ Exp e; }
+{ Exp e; Token sTok, eTok; }
 {
-  <PRINT> <LPAREN> e = Expression() <RPAREN> <SEMICOLON>
-  { return new Print(e); }
+  sTok = <PRINT> <LPAREN> e = Expression() <RPAREN> eTok = <SEMICOLON>
+  { return new Print(e, sTok.beginLine, sTok.beginColumn, eTok.endLine, eTok.endColumn); }
 }
 
 Statement AssignmentStatement() :
-{ Identifier id; Exp e; }
+{ Identifier id; Exp e; Token eTok; }
 {
-  id = Identifier() <ASSIGN> e = Expression() <SEMICOLON>
-  { return new Assign(id, e); }
+  id = Identifier() <ASSIGN> e = Expression() eTok = <SEMICOLON>
+  { return new Assign(id, e, id.line, id.column, eTok.endLine, eTok.endColumn); }
 }
 
 Statement ArrayAssignmentStatement() :
-{ Identifier id; Exp e1, e2; }
+{ Identifier id; Exp e1, e2; Token eTok; }
 {
-  id = Identifier() <LBRACKET> e1 = Expression() <RBRACKET> <ASSIGN> e2 = Expression() <SEMICOLON> // id[e1] = e2;
-  { return new ArrayAssign(id, e1, e2); }
+  id = Identifier() <LBRACKET> e1 = Expression() <RBRACKET> <ASSIGN> e2 = Expression() eTok = <SEMICOLON> // id[e1] = e2;
+  { return new ArrayAssign(id, e1, e2, id.line, id.column, eTok.endLine, eTok.endColumn); }
 }
 
 Exp Expression() :
@@ -322,18 +322,18 @@ Exp Expression() :
 }
 
 Exp AndExpression() :
-{ Exp e1, e2; }
+{ Exp e1, e2; Token op; }
 {
   e1 = CompareExpression()
-  ( <AND> e2 = CompareExpression() { e1 = new And(e1, e2); } )* // && 나오면 CompareExpr() 호출해서 expr 받아옴(우선순위에 따라 UnaryExpr()까지 넘어갈 수도 있음)
+  ( op = <AND> e2 = CompareExpression() { e1 = new And(e1, e2, e1.line, e1.column, e2.endLine, e2.endColumn); } )* // && 나오면 CompareExpr() 호출해서 expr 받아옴(우선순위에 따라 UnaryExpr()까지 넘어갈 수도 있음)
   { return e1; } // && 안 나오면 CompareExpr()이 반환하는 expr을 return(마찬가지로, 우선순위에 따라 UnaryExpr()까지 넘어갈 수도)
 }
 
 Exp CompareExpression() :
-{ Exp e1, e2; }
+{ Exp e1, e2; Token op; }
 {
   e1 = AddExpression()
-  ( <LT> e2 = AddExpression() { e1 = new LessThan(e1, e2); } )*
+  ( op = <LT> e2 = AddExpression() { e1 = new LessThan(e1, e2, e1.line, e1.column, e2.endLine, e2.endColumn); } )*
   { return e1; }
 }
 
@@ -342,37 +342,37 @@ Exp AddExpression() :
 {
   e1 = MulExpression()
   ( ( op = <PLUS> | op = <MINUS> ) e2 = MulExpression() {
-    if (op.kind == PLUS) e1 = new Plus(e1, e2);
-    else e1 = new Minus(e1, e2);
+    if (op.kind == PLUS) e1 = new Plus(e1, e2, e1.line, e1.column, e2.endLine, e2.endColumn);
+    else e1 = new Minus(e1, e2, e1.line, e1.column, e2.endLine, e2.endColumn);
     } )*
   { return e1; }
 }
 
 Exp MulExpression() :
-{ Exp e1, e2; }
+{ Exp e1, e2; Token op; }
 {
   e1 = UnaryExpression()
-  ( <STAR> e2 = UnaryExpression() { e1 = new Times(e1, e2); } )*
+  ( op = <STAR> e2 = UnaryExpression() { e1 = new Times(e1, e2, e1.line, e1.column, e2.endLine, e2.endColumn); } )*
   { return e1; }
 }
 
 Exp UnaryExpression() :
-{ Exp e; }
+{ Exp e; Token op; }
 {
-  <NOT> e = UnaryExpression() { return new Not(e); }
+  op = <NOT> e = UnaryExpression() { return new Not(e, op.beginLine, op.beginColumn, e.endLine, e.endColumn); }
     |
     e = PostfixExpression()
     { return e; }
 }
 
 Exp PostfixExpression() :
-{ Exp exp, e; Identifier id; ExpList el = new ExpList(); }
+{ Exp exp, e; Identifier id; ExpList el = new ExpList(); Token endTok, lengthTok; }
 {
   exp = PrimaryExpression()
   (
-    <LBRACKET> e = Expression() <RBRACKET> { exp = new ArrayLookup(exp, e); } // id[exp] 형태
-    | LOOKAHEAD(2) <DOT> <LENGTH> { exp = new ArrayLength(exp); } // id.length
-    | <DOT> id = Identifier() <LPAREN> [ el = ExpressionList() ] <RPAREN> { exp = new Call(exp, id, el); }// instanceId.metId(params)
+    <LBRACKET> e = Expression() endTok = <RBRACKET> { exp = new ArrayLookup(exp, e, exp.line, exp.column, endTok.endLine, endTok.endColumn); } // id[exp] 형태
+    | LOOKAHEAD(2) <DOT> lengthTok = <LENGTH> { exp = new ArrayLength(exp, exp.line, exp.column, lengthTok.endLine, lengthTok.endColumn); } // id.length
+    | <DOT> id = Identifier() <LPAREN> [ el = ExpressionList() ] endTok = <RPAREN> { exp = new Call(exp, id, el, exp.line, exp.column, endTok.endLine, endTok.endColumn); }// instanceId.metId(params)
   )*
   { return exp; }
 }
@@ -399,7 +399,7 @@ Exp PrimaryExpression() :
   exp = IntegerLiteral()     { return exp; }
     | exp = TrueLiteral()    { return exp; }
     | exp = FalseLiteral()   { return exp; }
-    | id = Identifier()      { return new IdentifierExp(id.s); } // 그냥 id return하면 안 됨. return type이 Exp이기 때문에.. Exp를 상속받은 Iden..Exp 생성해서 반환
+    | id = Identifier()      { return new IdentifierExp(id.s, id.line, id.column, id.endLine, id.endColumn); } // 그냥 id return하면 안 됨. return type이 Exp이기 때문에.. Exp를 상속받은 Iden..Exp 생성해서 반환
     | exp = ThisExpression() { return exp; }
     | LOOKAHEAD(3) exp = ArrayAllocationExpression() { return exp; }
     | exp = AllocationExpression() { return exp; }
@@ -410,42 +410,42 @@ IntegerLiteral IntegerLiteral() :
 { Token t; }
 {
   t = <INTEGER_LITERAL>
-  { return new IntegerLiteral(Integer.parseInt(t.image)); } // IntegerLiteral class => field i(int) for lexeme
+  { return new IntegerLiteral(Integer.parseInt(t.image), t.beginLine, t.beginColumn, t.endLine, t.endColumn); } // IntegerLiteral class => field i(int) for lexeme
 }
 
 Exp TrueLiteral() :
-{}
+{ Token t; }
 {
-  <TRUE>
-  { return new True(); }
+  t = <TRUE>
+  { return new True(t.beginLine, t.beginColumn, t.endLine, t.endColumn); }
 }
 
 Exp FalseLiteral() :
-{}
+{ Token t; }
 {
-  <FALSE>
-  { return new False(); }
+  t = <FALSE>
+  { return new False(t.beginLine, t.beginColumn, t.endLine, t.endColumn); }
 }
 
 Exp ThisExpression() :
-{}
+{ Token t; }
 {
-  <THIS>
-  { return new This(); }
+  t = <THIS>
+  { return new This(t.beginLine, t.beginColumn, t.endLine, t.endColumn); }
 }
 
 Exp AllocationExpression() :
-{ Identifier id; }
+{ Identifier id; Token newTok, endTok; }
 {
-  <NEW> id = Identifier() <LPAREN> <RPAREN>
-  { return new NewObject(id); }
+  newTok = <NEW> id = Identifier() <LPAREN> endTok = <RPAREN>
+  { return new NewObject(id, newTok.beginLine, newTok.beginColumn, endTok.endLine, endTok.endColumn); }
 }
 
 Exp ArrayAllocationExpression() :
-{ Exp exp; }
+{ Exp exp; Token newTok, endTok; }
 {
-  <NEW> <INT> <LBRACKET> exp = Expression() <RBRACKET>
-  { return new NewArray(exp); }
+  newTok = <NEW> <INT> <LBRACKET> exp = Expression() endTok = <RBRACKET>
+  { return new NewArray(exp, newTok.beginLine, newTok.beginColumn, endTok.endLine, endTok.endColumn); }
 }
 
 Identifier Identifier() :
