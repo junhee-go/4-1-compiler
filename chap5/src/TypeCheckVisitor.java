@@ -510,7 +510,7 @@ public class TypeCheckVisitor implements TypeVisitor {
     public Type visit(Print n) {
         Type expr = n.e.accept(this);
         if (!(expr instanceof IntegerType)) // MiniJava 7.6 (31)
-            report("System.out.println expects int, found " + typeToString(expr));
+            report(n.e, "System.out.println expects int, found " + typeToString(expr));
 
         return null;
     }
