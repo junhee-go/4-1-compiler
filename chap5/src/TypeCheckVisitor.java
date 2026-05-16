@@ -33,17 +33,18 @@ public class TypeCheckVisitor implements TypeVisitor {
 
     public boolean check(Program program) {
         try {
-            phase = Phase.COLLECT; // 1단계 설정. 근데, phase 초기화를 COLLECT로 해두니 굳이 안 해도 될 듯
-            /*
-            this => TypeCheckVisitor
-            TypeCheckVisitor를 인자로 program의 accept() 호출 ->
-            program.accept()에선 TypeCheckVisitor.visit(Program)을 호출하여 Program에 대한 Type Check을 시작함.
-            */
             program.accept(this);
+
+            String cyclicClass = acyclic();
+            if (cyclicClass != null) {
+                report("Cyclic inheritance detected involving class " + cyclicClass);
+                return printErrors();
+            }
 
             phase = Phase.CHECK;
             program.accept(this);
-        } catch (TooManyErrorsException e) {
+        }
+        catch (TooManyErrorsException e) {
             return printErrors();
         }
 
@@ -55,7 +56,7 @@ public class TypeCheckVisitor implements TypeVisitor {
     1. 허용된 에러 개수를 초과한 경우
     2. Type Checking 2단계까지 다 정상적으로 끝난 이후
     */
-    public boolean printErrors() { // boolean -> void
+    public boolean printErrors() {
         if (errors.isEmpty()) return true;
 
         else {
@@ -153,7 +154,7 @@ public class TypeCheckVisitor implements TypeVisitor {
         return false;
     }
 
-    // 어떤 변수 이름이 어떤 타입인지 찾아주는 헬퍼 메서드. x, num_aux같은 식별자 나오면, 선언되어 있는지, 선언돼 있다면 어떤 타입인지 찾음
+    // 어떤 변수 이름이 어떤 타입인지 찾아주는 보조 메서드. x, num_aux같은 식별자 나오면, 선언되어 있는지, 선언돼 있다면 어떤 타입인지 찾음
     private Type lookupVar(String name) {
         if (currentMethod != null) {
             Type local = currentMethod.locals.get(name); // name이 지역변수인 경우
@@ -165,7 +166,8 @@ public class TypeCheckVisitor implements TypeVisitor {
                 return param;
         }
 
-        // currentMethod가 null => name이 필드인지 확인
+        // currentMethod가 null => 지역변수/매개변수 스코프가 없으니 name이 필드인지 확인
+        // 지역변수/매개변수에서 name을 못 찾았다면 name이 필드인지 확인
         ClassInfo ci = currentClass;
         while (ci != null) {
             Type field = ci.fields.get(name);
@@ -174,16 +176,15 @@ public class TypeCheckVisitor implements TypeVisitor {
             ci = ci.parent == null ? null : classes.get(ci.parent); // 부모class에 있는 field인지 확인
         }
 
-        return null; // 부모 클래스까지 뒤졌을 때 name이 없다면 선언되지 name은 선언되지 않은 변수
+        return null; // 부모 클래스까지 뒤졌을 때 name이 없다면 name은 선언되지 않은 변수
     }
 
     private MethodInfo methodtype(String className, String methodName) {
         ClassInfo ci = classes.get(className);
         while (ci != null) {
             MethodInfo method = ci.methods.get(methodName);
-            if (method != null) {
-                return method;
-            }
+            if (method != null) return method;
+
             ci = ci.parent == null ? null : classes.get(ci.parent);
         }
         return null;
@@ -204,24 +205,61 @@ public class TypeCheckVisitor implements TypeVisitor {
     }
 
     private String expectedTypeName(Class<? extends Type> typeClass) {
-        if (typeClass == IntegerType.class) {
+        if (typeClass == IntegerType.class)
             return "int";
-        }
-        if (typeClass == BooleanType.class) {
+
+        if (typeClass == BooleanType.class)
             return "boolean";
-        }
-        if (typeClass == IntArrayType.class) {
+
+        if (typeClass == IntArrayType.class)
             return "int[]";
-        }
+
         return typeClass.getSimpleName();
+    }
+
+//    private boolean hasSameMethodInParent(ClassInfo ci, String methodName) {
+//        if (ci == null) return false;
+//
+//        String parentName = ci.parent;
+//        while (parentName != null) {
+//            ClassInfo parentInfo = classes.get(parentName);
+//            if (parentInfo == null) return false;
+//
+//            if (parentInfo.methods.containsKey(methodName)) return true;
+//
+//            parentName = parentInfo.parent;
+//        }
+//
+//        return false;
+//    }
+
+    private String acyclic() {
+        for (String className : classes.keySet()) {
+            Set<String> seen = new HashSet<>();
+            String current = className;
+
+            while (current != null) {
+                if (seen.contains(current))
+                    return current;
+
+                seen.add(current);
+
+                ClassInfo ci = classes.get(current);
+                if (ci == null) break;
+
+                current = ci.parent;
+            }
+        }
+
+        return null;
     }
 
     @Override
     public Type visit(Program n) {
         n.m.accept(this);
-        for (int i = 0; i < n.cl.size(); i++) {
+        for (int i = 0; i < n.cl.size(); i++)
             n.cl.elementAt(i).accept(this);
-        }
+
         return null;
     }
 
@@ -388,6 +426,11 @@ public class TypeCheckVisitor implements TypeVisitor {
                 invalidMethods.add(n);
                 return null;
             }
+//            else if (hasSameMethodInParent(currentClass, n.i.s)) {
+//                report(n.i, "Method overriding is not allowed: '" + n.i.s + "(..)' in class '" + currentClass.name + "'");
+//                invalidMethods.add(n);
+//                return null;
+//            }
             else {
                 MethodInfo method = new MethodInfo();
                 method.returnType = n.t;
@@ -648,8 +691,10 @@ public class TypeCheckVisitor implements TypeVisitor {
             report(n.i, "Method call argument count mismatch for " + n.i.s + ": expected "
                 + method.params.size() + ", found " + n.el.size());
 
-
-        int argCount = Math.min(n.el.size(), method.params.size()); // 실인자 개수까지만 비교하기 위함. 만약 실인자 개수 > 메서드 매개변수 개수라면, 메서드 매개변수 개수까지만 체크하기 위해 min()
+        // 실인자 개수까지만 비교하기 위함.
+        // 만약 실인자 개수 > 메서드 매개변수 개수라면,
+        // 메서드 매개변수 개수까지만 체크하기 위해 min()
+        int argCount = Math.min(n.el.size(), method.params.size());
         List<Type> paramTypes = new ArrayList<>(method.params.values());
         for (int i = 0; i < argCount; i++) {
             Exp arg = n.el.elementAt(i);
